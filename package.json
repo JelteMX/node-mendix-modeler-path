@@ -1,0 +1,26 @@
+{
+  "name": "node-mendix-modeler-path",
+  "version": "1.0.0",
+  "description": "Checks Windows where the Mendix Modeler (Version Selector) is and outputs a path and argument format",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JelteMX/node-mendix-modeler-path.git"
+  },
+  "keywords": [
+    "mendix"
+  ],
+  "author": "J.W. Lagendijk",
+  "license": "Apache 2",
+  "private": true,
+  "bugs": {
+    "url": "https://github.com/JelteMX/node-mendix-modeler-path/issues"
+  },
+  "homepage": "https://github.com/JelteMX/node-mendix-modeler-path#readme",
+  "dependencies": {
+    "shelljs": "^0.5.3"
+  }
+}
