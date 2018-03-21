@@ -1,19 +1,40 @@
-var shell = require('shelljs'),
-	os = require('os');
+const shell = require('shelljs');
+const os = require('os');
 
-var exe = {
-	err: null, 
+const exe = {
+	err: null,
 	output: null
 };
 
-function getShellOutput (cmd, replace) {
-	var output = shell.exec(cmd, {silent:true}).output.trim();
-	return replace ? output.replace(/[\n\r]/g,'') : output;
+const getShellOutput = (cmd, replace) => {
+	let output = null;
+	let error = null;
+
+	try {
+		output = shell.exec(cmd, {
+			silent: true
+		}).stdout.trim();
+	} catch (error) {
+		err = error;
+		output = null;
+	}
+
+	if (null !== error) {
+		return {
+			error,
+			output
+		};
+	}
+
+	return {
+		output: replace ? output.replace(/[\n\r]/g, '') : output,
+		error: null
+	};
 }
 
-function getFtypeArguments (line) {
-	var ftypeRegEx = /(["'])(?:(?=(\\?))\2.)*?\1/g;
-	var regExMatch = line.match(ftypeRegEx);
+const getFtypeArguments = (line) => {
+	const ftypeRegEx = /(["'])(?:(?=(\\?))\2.)*?\1/g;
+	const regExMatch = line.match(ftypeRegEx);
 	if (regExMatch.length === 2) {
 		// Found cmd + input arg
 		return {
@@ -25,27 +46,35 @@ function getFtypeArguments (line) {
 	}
 }
 
-function findModeler () {
-	var findGeneric = true,
-		assoc = getShellOutput('assoc .mpr', true);
+const findModeler = () => {
+	let findGeneric = true;
+	const assoc = getShellOutput('assoc .mpr', true);
 	// Find association
 
-	if (assoc.indexOf('not found') !== -1) {
+	if (assoc.error) {
+		exe.err = assoc.error;
+	} else if (assoc.output.indexOf('not found') !== -1) {
 		exe.err = 'No file association found for .mpr, are you sure you installed Mendix?';
-	} else if (assoc.indexOf('.mpr=') === 0) {
+	} else if (assoc.output.indexOf('.mpr=') === 0) {
 		// Found association, getting the Version Selector
-		var association = assoc.split('=')[1],
-			ftype = getShellOutput('ftype', false).split('\n').filter(function (line) {
+		const association = assoc.output.split('=')[1];
+		const ftypeShell = getShellOutput('ftype', false);
+
+		if (ftypeShell.error !== null) {
+			exe.err = assoc.error;
+		} else {
+			const ftype = ftypeShell.output.split('\n').filter(function (line) {
 				return line.indexOf(association) !== -1;
 			});
 
-		if (ftype.length === 1) {
-			// ftype found, getting arguments
-			var ftypeArgs = getFtypeArguments(ftype[0]);
-			if (ftypeArgs !== null) {
-				exe.output = ftypeArgs;
-				findGeneric = false;
-			} 
+			if (ftype.length === 1) {
+				// ftype found, getting arguments
+				const ftypeArgs = getFtypeArguments(ftype[0]);
+				if (ftypeArgs !== null) {
+					exe.output = ftypeArgs;
+					findGeneric = false;
+				}
+			}
 		}
 	} else {
 		exe.err = 'Unknown error, cannot find the association for .MPR (Mendix Project) files. Are you on Windows?';
@@ -53,12 +82,15 @@ function findModeler () {
 	}
 
 	if (findGeneric) {
-		var ftypeMendix = getShellOutput('ftype mendix', true);
-		if (ftypeMendix.indexOf('not found') !== -1) {
+		const ftypeMendixShell = getShellOutput('ftype mendix', true);
+
+		if (ftypeMendixShell.error !== null) {
+			exe.err = ftypeMendixShell.error;
+		} else if (ftypeMendixShell.output.indexOf('not found') !== -1) {
 			exe.err = 'No file association found for .mpr, are you sure you installed Mendix?';
 		} else {
 			// ftype found, getting arguments
-			var ftypeArgs = getFtypeArguments(ftypeMendix);
+			const ftypeArgs = getFtypeArguments(ftypeMendix);
 			if (ftypeArgs !== null) {
 				exe.output = ftypeArgs;
 			} else {

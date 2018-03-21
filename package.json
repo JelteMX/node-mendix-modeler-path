@@ -1,6 +1,6 @@
 {
   "name": "node-mendix-modeler-path",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Checks Windows where the Mendix Modeler (Version Selector) is and outputs a path and argument format",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/JelteMX/node-mendix-modeler-path#readme",
   "dependencies": {
-    "shelljs": "^0.5.3"
+    "shelljs": "^0.8.1"
   }
 }
